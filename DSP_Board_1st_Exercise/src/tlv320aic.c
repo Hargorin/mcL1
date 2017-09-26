@@ -30,8 +30,8 @@ const uint16_t TLV320_init_data[10] = {
     0x0F9       // Reg 03: Right Headphone out (-12dB)
     0x012       // Reg 04: Analog Audio Path Control (DAC sel, Mute Mic)
     0x000       // Reg 05: Digital Audio Path Control
-                // Reg 06: Power Down Control (All ON)
-                // Reg 07: Digital Audio Interface Format (I2S, 16-bit, master)
+    0x001       // Reg 06: Power Down Control (All ON)
+    0x042       // Reg 07: Digital Audio Interface Format (I2S, 16-bit, master)
     #if CODEC_SAMPLE_RATE == 96000
                 // Reg 08: Sampling Control (Clock Out divided by 1, USB, 250x, 96k ADC/DAC)
     #endif
