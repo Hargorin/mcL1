@@ -24,12 +24,12 @@
  ***************************************************************************/
 
 const uint16_t TLV320_init_data[10] = {
-                // Reg 00: Left Line In (6dB, mute OFF)
-                // Reg 01: Right Line In (6dB, mute OFF)
-                // Reg 02: Left Headphone out (-12dB)
-                // Reg 03: Right Headphone out (-12dB)
-                // Reg 04: Analog Audio Path Control (DAC sel, Mute Mic)
-                // Reg 05: Digital Audio Path Control
+    0x01B       // Reg 00: Left Line In (6dB, mute OFF)
+    0x01B       // Reg 01: Right Line In (6dB, mute OFF)
+    0x0F9       // Reg 02: Left Headphone out (-12dB)
+    0x0F9       // Reg 03: Right Headphone out (-12dB)
+    0x012       // Reg 04: Analog Audio Path Control (DAC sel, Mute Mic)
+    0x000       // Reg 05: Digital Audio Path Control
                 // Reg 06: Power Down Control (All ON)
                 // Reg 07: Digital Audio Interface Format (I2S, 16-bit, master)
     #if CODEC_SAMPLE_RATE == 96000
