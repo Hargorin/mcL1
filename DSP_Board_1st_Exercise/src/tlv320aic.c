@@ -1,14 +1,19 @@
 /*******************************************************************************
- * FHNW, Labor mcL1
- * 1st_Exercise_Vorlage
- *
- * Aufgabe
- *       Folgende Dateien sind zu vervollständigen:
- *      - dci.c
- *      - dma.c
- *      - i2c.c
- *      - tlv320aic.c
- *  
+ * Project:
+ *  "Neuentwicklung DSP-Board fuer das Labor MikroComm"
+ * 
+ * Version / Date:
+ *  0.9 / August 2016
+ * 
+ * Authors:
+ *  Simon Gerber, Belinda Kneubuehler
+ * 
+ * File Name:
+ *  tlv320aci.c
+ * 
+ * Description:
+ *  This file implements the functionalities of the codec. The public functions
+ *  can be used to control the codec.
 *******************************************************************************/
 
 #include "constants.h"
@@ -24,32 +29,42 @@
  ***************************************************************************/
 
 const uint16_t TLV320_init_data[10] = {
-    0x01B       // Reg 00: Left Line In (6dB, mute OFF)
-    0x01B       // Reg 01: Right Line In (6dB, mute OFF)
-    0x0F9       // Reg 02: Left Headphone out (-12dB)
-    0x0F9       // Reg 03: Right Headphone out (-12dB)
-    0x012       // Reg 04: Analog Audio Path Control (DAC sel, Mute Mic)
-    0x000       // Reg 05: Digital Audio Path Control
-    0x001       // Reg 06: Power Down Control (All ON)
-    0x042       // Reg 07: Digital Audio Interface Format (I2S, 16-bit, master)
+    0x01B, // Reg 00: Left Line In (6dB, mute OFF)
+    0x01B, // Reg 01: Right Line In (6dB, mute OFF)
+    0x06C, // Reg 02: Left Headphone out (-12dB)
+    0x06C, // Reg 03: Right Headphone out (-12dB)
+    0x012, // Reg 04: Analog Audio Path Control (DAC sel, Mute Mic)
+    0x00, // Reg 05: Digital Audio Path Control
+    0x000, // Reg 06: Power Down Control (All ON)
+    0x042, // Reg 07: Digital Audio Interface Format (I2S, 16-bit, master)
+    
     #if CODEC_SAMPLE_RATE == 96000
-                // Reg 08: Sampling Control (Clock Out divided by 1, USB, 250x, 96k ADC/DAC)
+        // Reg 08: Sampling Control (Clock Out divided by 1, USB, 250x, 96k ADC/DAC)
+        0x01D,
     #endif
     #if CODEC_SAMPLE_RATE == 44100
-                // Reg 08: Sampling Control (Clock Out divided by 1, USB, 250x, 44.1k ADC/DAC)
+        // Reg 08: Sampling Control (Clock Out divided by 1, USB, 250x, 44.1k ADC/DAC)
+        0x023,
     #endif
     #if CODEC_SAMPLE_RATE == 48000
-                // Reg 08: Sampling Control (Clock Out divided by 2, USB, 250x, 48k ADC/DAC)
+        // Reg 08: Sampling Control (Clock Out divided by 2, USB, 250x, 48k ADC/DAC)
+        0x001,
     #endif
     #if CODEC_SAMPLE_RATE == 32000
-                // Reg 08: Sampling Control (Clock Out divided by 1, USB, 250x, 32k ADC/DAC)
+        // Reg 08: Sampling Control (Clock Out divided by 1, USB, 250x, 32k ADC/DAC)
+        0x019,
     #endif
     #if CODEC_SAMPLE_RATE == 8000
-                // Reg 08: Sampling Control (Clock Out divided by 1, USB, 250x, 8k ADC/DAC)
+        // Reg 08: Sampling Control (Clock Out divided by 1, USB, 250x, 8k ADC/DAC)
+        0x00D,
     #endif
-                // Reg 09: Active Control
+        0x001 // Reg 09: Active Control
 };
+#if USE_SDR == 1 
+    uint32_t samplerate=48000L;
+#else
     unsigned long samplerate=CODEC_SAMPLE_RATE;
+#endif
 
 /**************************************************************************
  * Private Functions
@@ -62,9 +77,15 @@ const uint16_t TLV320_init_data[10] = {
  */
 void codec_write(uint8_t reg, uint16_t data)
 {
-    /*
-     * Fill this with code! 
-     */
+    uint8_t wdata[3];
+
+    // stuff the output buffer
+    wdata[0] = (TLV320_ADDR << 1) | 0;
+    wdata[1] = ((reg << 1)&0xFE) | ((data >> 8)&0x01);
+    wdata[2] = data & 0xff;
+
+    // Send it
+    i2c_write(wdata, 3);
 }
 
 /**************************************************************************
@@ -73,9 +94,16 @@ void codec_write(uint8_t reg, uint16_t data)
 
 void codec_init()
 {
-    /*
-     * Fill this with code! 
-     */
+    int i;
+    // Reset
+    codec_reset();
+    __delay_ms(10); // wait 10 ms
+    // Configure registers
+    for (i = 0; i < TLV320_NUM_REGS; i++)
+    {
+        codec_write(i, TLV320_init_data[i]);
+    }
+    codec_setInput(LINE);
 }
 
 /**************************************************************************

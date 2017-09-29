@@ -1,14 +1,19 @@
 /*******************************************************************************
- * FHNW, Labor mcL1
- * 1st_Exercise_Vorlage
- *
- * Aufgabe
- *       Folgende Dateien sind zu vervollständigen:
- *      - dci.c
- *      - dma.c
- *      - i2c.c
- *      - tlv320aic.c
- *  
+ * Project:
+ *  "Neuentwicklung DSP-Board fuer das Labor MikroComm"
+ * 
+ * Version / Date:
+ *  0.9 / August 2016
+ * 
+ * Authors:
+ *  Simon Gerber, Belinda Kneubuehler
+ *  Hochschule fuer Technik, FHNW, Windisch
+ * 
+ * File Name:
+ *  dci.c
+ * 
+ * Description:
+ *  This file initialises the DCI interface and configures it in I2S mode.
 *******************************************************************************/
 
 #include <p33EP256MU806.h>
@@ -21,25 +26,25 @@
 
 void dci_init()
 {
-    // Fill this with code!
     DCICON1 = 0;
-                                // Data changes on serial clock falling edge, sampled on serial clock rising edge
-                                // I2S Frame Sync mode
-                                // Data transmission/reception begins one serial clock cycle after the frame synchronization pulse
-                                // Transmit ?0?s on a transmit underflow
-                                // CSDO pin is tri-stated during disabled transmit time slots
-                                // COFS pin is an input when DCI module is enabled
-                                // CSCK pin is an input when DCI module is enabled
-  
-    DCICON2 = 0;            
-                                // Data frame has one word (In I2S mode: two words)
-                                // Data word size is 16 bits
+    DCICON1bits.CSCKE = 1;      // sampled on serial clock rising edge
+    DCICON1bits.COFSM = 0b01;   // 01 = I2S Frame Sync mode
+    DCICON1bits.DJST = 0;       /* Data transmission/reception begins one 
+                                 * serial clock cycle after frame
+                                 * synchronisation pulse*/
+    DCICON1bits.UNFM = 0;       // underflow -> 0
+    DCICON1bits.CSDOM = 1;      // tristate in idle
+    DCICON1bits.COFSD = 1;      // framesync input, slave
+    DCICON1bits.CSCKD = 1;      // clk input, slave  
+    DCICON2 = 0;                // DSP is slave !
+    DCICON2bits.COFSG = 0;      // 0000 = Data frame has 1 word
+    DCICON2bits.WS = 0b1111;    // 1111 = Data word size is 16 bits
     
-                                // Transmit slot 0
-                                // Receive slot 0
+    TSCON = 0x0001;             // Transmit slot 0
+    RSCON = 0x0001;             // Receive slot 0
 
-                                // Clear the TX buffer
+    TXBUF0 = 0;                 // Clear the TX buffer
 
-                                // Disable DCI interrupt (we use DMA)
-                                // Enable DCI
+    IEC3bits.DCIIE = 0;         // Disable DCI interrupt, we use DMA
+    DCICON1bits.DCIEN = 1;      // Enable DCI
 } 
